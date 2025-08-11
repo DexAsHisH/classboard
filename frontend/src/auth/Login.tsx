@@ -5,18 +5,26 @@ import { useAuth } from "../context/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SecondaryLoader } from "@/ui/SecondaryLoader";
+import { Eye, EyeOff } from "lucide-react";
 
 const API_URL = import.meta.env.VITE_API_URL;
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { setIsLoggedIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState("");
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
+    setError("");
     setIsLoading(true);
 
     try {
@@ -35,22 +43,42 @@ const Login = () => {
         navigate("/dashboard");
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || "Login failed");
+      let errorMessage = "Login failed. Please try again.";
+
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.status === 401) {
+        errorMessage = "Invalid email or password.";
+      } else if (err.response?.status === 404) {
+        errorMessage = "Account not found. Please check your email.";
+      } else if (err.response?.status === 400) {
+        errorMessage = "Please enter valid email and password.";
+      }
+
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className=" bg-neutral-950 min-h-screen flex items-center justify-center px-4">
-      <div className=" bg-neutral-900 shadow-md rounded-lg p-8 w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center text-background tracking-wider ">
+    <div className="bg-neutral-950 min-h-screen flex items-center justify-center px-4">
+      <div className="bg-neutral-900 shadow-md rounded-lg p-8 w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center text-background tracking-wider">
           Login to your Account!
         </h2>
 
+        {error && (
+          <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-md mb-4">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-background">
+              Email
+            </Label>
             <Input
               type="email"
               id="email"
@@ -63,16 +91,28 @@ const Login = () => {
           </div>
 
           <div>
-            <Label htmlFor="password">Password</Label>
-            <Input
-              type="password"
-              id="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full px-4 py-2 border border-neutral-400 rounded-md shadow-sm placeholder:text-neutral-300"
-              placeholder="••••••••"
-            />
+            <Label htmlFor="password" className="text-background">
+              Password
+            </Label>
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-1 block w-full px-4 py-2 pr-12 border border-neutral-400 rounded-md shadow-sm placeholder:text-neutral-300"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-200 transition-colors duration-200 mt-0.5"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
 
           {isLoading ? (
@@ -86,11 +126,7 @@ const Login = () => {
             </button>
           )}
         </form>
-        {error && (
-          <p className=" text-center text-red-600 text-sm mt-5">
-            Login failed!
-          </p>
-        )}
+
         <p className="mt-4 text-center text-sm text-neutral-400">
           Don't have an account?{" "}
           <Link

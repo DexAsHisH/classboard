@@ -12,8 +12,8 @@ router.post("/login", async (req, res) => {
     const result = loginSchema.safeParse(req.body);
     if (!result.success) {
         return res
-            .status(400)
-            .json({ message: "Invalid request data", errors: result.error });
+            .status(401)
+            .json({ errors: result.error });
     }
     const { email, password } = result.data;
     try {
@@ -26,11 +26,11 @@ router.post("/login", async (req, res) => {
             },
         });
         if (!user) {
-            return res.status(401).json({ message: "Invalid email" });
+            return res.status(400).json({ message: "Account not found. Please check your email." });
         }
         const isPassword = await bcrypt.compare(password, user.password);
         if (!isPassword) {
-            return res.status(401).json({ message: "Invalid password" });
+            return res.status(400).json({ message: "Invalid email or password" });
         }
         const jwtSecret = process.env.JWT_SECRET;
         if (!jwtSecret) {

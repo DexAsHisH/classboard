@@ -12,7 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const allowedOrigins = [
     "http://localhost:5173",
-    "https://class-board.vercel.app",
+    "https://classboard-lime.vercel.app",
 ];
 app.use(cors({
     origin: function (origin, callback) {

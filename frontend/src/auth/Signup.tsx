@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SecondaryLoader } from "@/ui/SecondaryLoader";
+import { Eye, EyeOff } from "lucide-react";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -19,9 +20,42 @@ const Signup = () => {
   });
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const validatePassword = (password: string) => {
+    if (password.length < 6) {
+      setPasswordError("Password must be at least 6 characters long");
+      return false;
+    }
+    setPasswordError("");
+    return true;
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setUser((prev) => ({ ...prev, password: newPassword }));
+    if (newPassword) {
+      validatePassword(newPassword);
+    } else {
+      setPasswordError("");
+    }
+  };
+
   const handleSignup = async (event: React.FormEvent) => {
     event.preventDefault();
+    setError("");
     setIsLoading(true);
+
+    if (!validatePassword(user.password)) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const result = await axios.post(`${API_URL}/api/signup`, user);
@@ -30,7 +64,17 @@ const Signup = () => {
         navigate("/login");
       }
     } catch (err: any) {
-      alert("Signup failed. Please check your inputs.");
+      let errorMessage = "Signup failed. Please check your inputs.";
+
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.status === 409) {
+        errorMessage = "An account with this email already exists.";
+      } else if (err.response?.status === 400) {
+        errorMessage = "Please fill in all required fields correctly.";
+      }
+
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -45,6 +89,12 @@ const Signup = () => {
         <h2 className="text-2xl font-bold mb-6 text-center text-background">
           Create an Account
         </h2>
+
+        {error && (
+          <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-md">
+            {error}
+          </div>
+        )}
 
         <div>
           <Label className="block text-background">Full Name</Label>
@@ -76,16 +126,31 @@ const Signup = () => {
 
         <div>
           <Label className="block text-background">Password</Label>
-          <Input
-            type="password"
-            value={user.password}
-            placeholder="Enter your password"
-            onChange={(e) =>
-              setUser((prev) => ({ ...prev, password: e.target.value }))
-            }
-            required
-            className="w-full px-4 py-2 mt-1 border border-neutral-400 rounded-md placeholder:text-neutral-300"
-          />
+          <div className="relative">
+            <Input
+              type={showPassword ? "text" : "password"}
+              value={user.password}
+              placeholder="Enter your password (min 6 characters)"
+              onChange={handlePasswordChange}
+              required
+              className={`w-full px-4 py-2 pr-12 mt-1 border rounded-md placeholder:text-neutral-300 ${
+                passwordError
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-neutral-400"
+              }`}
+            />
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-200 transition-colors duration-200 mt-0.5"
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+          {passwordError && (
+            <p className="text-red-400 text-sm mt-1">{passwordError}</p>
+          )}
         </div>
 
         <div>
@@ -126,7 +191,7 @@ const Signup = () => {
               setUser((prev) => ({ ...prev, discipline: e.target.value }))
             }
             required
-            className="w-full px-4 py-2 mt-1 border border-neutral-400rounded-md placeholder:text-neutral-300"
+            className="w-full px-4 py-2 mt-1 border border-neutral-400 rounded-md placeholder:text-neutral-300"
           />
         </div>
 
@@ -150,7 +215,12 @@ const Signup = () => {
         ) : (
           <button
             type="submit"
-            className="w-full bg-background hover:bg-neutral-300 border border-neutral-700 cursor-pointer text-foreground font-semibold py-2 px-4 rounded-md transition duration-300"
+            disabled={!!passwordError}
+            className={`w-full font-semibold py-2 px-4 rounded-md transition duration-300 ${
+              passwordError
+                ? "bg-neutral-600 text-neutral-400 cursor-not-allowed"
+                : "bg-background hover:bg-neutral-300 border border-neutral-700 cursor-pointer text-foreground"
+            }`}
           >
             Signup
           </button>
