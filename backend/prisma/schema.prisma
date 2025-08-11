@@ -1,0 +1,64 @@
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User{
+
+  id            Int    @id @default(autoincrement())
+  email         String @unique
+  password      String
+  student       Student?
+
+}
+
+model Student{
+
+  id              Int     @id @default(autoincrement())
+  name            String
+  userId          Int?   @unique
+  phoneNumber     String?
+  ProgramName     String
+  joiningYear     Int
+  discipline      String
+  guardianName    String?
+  guardianEmail   String?
+  guardianPhone   String?
+  user            User?  @relation(fields: [userId], references: [id])
+  courses         Course[]
+
+}
+
+model Course{
+  id                  Int    @id @default(autoincrement())
+  courseName          String
+  courseCode          String @unique
+  studentId          Int?
+  creditUnits         Int
+  studentGrade       String?
+  gradePoints        Int?
+  assignments         Assignment[] 
+  student            Student? @relation(fields: [studentId], references: [id])
+}
+
+
+model Assignment{
+
+  id              Int      @id @default(autoincrement())
+  title           String
+  status          AssignmentStatus @default(ONGOING)
+  courseId        Int
+  course          Course   @relation(fields: [courseId], references: [id])
+}
+
+
+enum AssignmentStatus {
+  ONGOING
+  COMPLETED
+}

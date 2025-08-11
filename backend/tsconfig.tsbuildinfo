@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/middleware/protectedauth.ts","./src/routes/assignment.ts","./src/routes/courses.ts","./src/routes/dashboard.ts","./src/routes/auth/login.ts","./src/routes/auth/me.ts","./src/routes/auth/signup.ts","./src/schemas/loginschema.ts"],"version":"5.9.2"}
