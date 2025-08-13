@@ -38,7 +38,7 @@ router.get("/dashboard/me", async (req, res) => {
       message: "Internal server error",
       error:
         typeof error === "object" && error !== null && "message" in error
-          ? (error as any).message
+          ? (error).message
           : String(error),
     });
   }
@@ -76,7 +76,7 @@ router.get("/dashboard/guardian", async (req, res) => {
       message: "Internal server error",
       error:
         typeof err === "object" && err !== null && "message" in err
-          ? (err as any).message
+          ? (err).message
           : String(err),
     });
   }

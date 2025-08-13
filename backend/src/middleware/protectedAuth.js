@@ -5,25 +5,15 @@ import { PrismaClient, User } from "@prisma/client";
 
 dotenv.config();
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: User;
-    }
-  }
-}
 
 const client = new PrismaClient();
 
-type JwtPayload = {
-  id: number;
-  email: string;
-};
+
 
 export const protectedAuth = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
+  req,
+  res,
+  next
 ) => {
   try {
     let token = req.cookies.token;
@@ -41,7 +31,7 @@ export const protectedAuth = async (
     if (!jwtSecret) {
       return res.status(500).json({ message: "Internal server error" });
     }
-    const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
+    const decoded = jwt.verify(token, jwtSecret);
 
     const user = await client.user.findUnique({
       where: { email: decoded.email },

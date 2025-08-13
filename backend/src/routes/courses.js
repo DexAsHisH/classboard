@@ -4,10 +4,6 @@ import { Router } from "express";
 const client = new PrismaClient();
 const router = Router();
 
-interface PrismaError {
-  code: string;
-  message: string;
-}
 
 router.get("/courses", async (req, res) => {
   if (!req.user) {
@@ -85,7 +81,7 @@ router.post("/courses", async (req, res) => {
     res.status(500).json({ error: "Failed to create course" });
   }
 });
-function isPrismaError(error: unknown): error is PrismaError {
+function isPrismaError(error) {
   return typeof error === "object" && error !== null && "code" in error;
 }
 

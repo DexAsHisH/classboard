@@ -157,7 +157,7 @@ router.post("/assignments", async (req, res) => {
     res.status(201).json(formattedAssignment);
   } catch (error) {
     if (typeof error === "object" && error !== null && "code" in error) {
-      const prismaError = error as { code?: string; message?: string };
+      const prismaError = error;
       if (prismaError.code === "P2002") {
         return res.status(400).json({
           error: "An assignment with similar details already exists.",
