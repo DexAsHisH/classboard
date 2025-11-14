@@ -45,10 +45,16 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign({ email: user.email, id: user.id }, jwtSecret, {
       expiresIn: "1d",
     });
+    
+    res.cookie("token", token,{
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 24 * 60 * 60 * 1000,
+    })
 
     return res.status(200).json({
       message: "Login successful",
-      token: token,
       user: {
         id: user.id,
         email: user.email,
@@ -61,6 +67,13 @@ router.post("/login", async (req, res) => {
 });
 
 router.get("/logout", (req, res) => {
+
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
+  
   return res.status(200).json({ message: "Logout successful" });
 });
 
