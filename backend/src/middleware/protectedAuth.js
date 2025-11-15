@@ -1,4 +1,3 @@
-import { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { PrismaClient, User } from "@prisma/client";
@@ -7,7 +6,6 @@ dotenv.config();
 
 
 const client = new PrismaClient();
-
 
 
 export const protectedAuth = async (
